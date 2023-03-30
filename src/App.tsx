@@ -1,7 +1,14 @@
 import { PokerChip, MagnifyingGlass, Hash } from "phosphor-react";
 import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
+import { Card } from "./components/Card";
+import { Loading } from "./components/Loading";
 import viteLogo from "/vite.svg";
+
+interface IPokemon {
+  name: string;
+  url: string;
+}
 
 function App() {
   /*const [name, setName] = useState("");
@@ -15,25 +22,27 @@ function App() {
     age: 19
   })
   console.log(name);*/
-  const [Pokemon, setPokemon] = useState([])
+  const [Pokemon, setPokemon] = useState<IPokemon[]>([]);
+  const [loading, setLoading] = useState (true);
+  const [input, setInput] = useState("");
 
 
   async function fetchData() {
     const data = await fetch(
-      "https://pokeapi.co/api/v2/pokemon?limit=150"
-    ).then((response) => response.json());
+      "https://pokeapi.co/api/v2/pokemon?limit=250")
+      .then((response) => response.json())
+    .finally(() => setLoading(false))
 
     setPokemon(data.results);
   }
 
-
   fetchData();
-
- 
-  useEffect(()=>{
+  
+  useEffect(() => {
     fetchData();
   }, []);
 
+  if (loading) return <Loading/>
 
   return (
     <div className="flex flex-col mb-12">
@@ -56,6 +65,8 @@ function App() {
 
             <input
               type="text"
+              value={input}
+              onChange ={(Event) => setInput(Event.target.value)}
               placeholder="insira o nome de um Pokémon"
               className="w-full py-3 px-6 rounded-full text-red-700 placeholder:text-gray-600 focus:outline-none"
             />
@@ -68,10 +79,12 @@ function App() {
         </div>
       </header>
       <main className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 pt-12 gap-3 mx-auto">
-        {Pokemon.map((item)=>(
-          <p key={item.name}>{item.name} </p>
-      ))}
-
+        {Pokemon.filter((filteredItem)=> filteredItem.name.includes(input)).map((item, index) => (
+          <Card 
+          key={item.name}
+          name={item.name} 
+          position={item.url}/>
+        ))}
       </main>
     </div>
   );
